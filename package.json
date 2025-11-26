@@ -1,0 +1,16 @@
+{
+  "name": "ecologysimulation",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "test": "node index.ts"
+  },
+  "dependencies": {
+    "three": "^0.181.2",
+    "typescript": "^5.9.3"
+  }
+}
