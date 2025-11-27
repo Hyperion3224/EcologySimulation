@@ -15,7 +15,15 @@ const Scene = () => {
 
             camera.position.z = 2;
 
+            const geometry = new THREE.BoxGeometry(1,1,1);
+            const geometryMat = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
+            const geometryMesh = new THREE.Mesh(geometry, geometryMat);
+            scene.add(geometryMesh);
+
             renderer.setAnimationLoop(()=>{
+                geometryMesh.rotation.x += Math.random()*0.01;
+                geometryMesh.rotation.y += Math.random()*0.01;
+                geometryMesh.rotation.z += Math.random()*0.01;
                 renderer.render(scene, camera);
             })
             
