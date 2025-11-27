@@ -1,22 +1,35 @@
 import { size } from "../interfaces";
 
-export class board {
-    public heightmap: any = {
-        coords: [[],[]],
-        height_function: ((x: number,y: number)=>{return 0}),
-        size: {x:0, y:0}
-    };
+interface Heightmap {
+    coords: number[][],
+    height_function: (x: number, y:number) => number,
+    size: size;
+}
+
+export class Board {
+    public heightmap: Heightmap;
     
     constructor(size: size, height_function: (x: number,y: number) => number){
-        this.heightmap.size = size;
-        this.heightmap.height_function = height_function;
-        this.load_heightmap(this.heightmap);
+        this.heightmap={
+            size,
+            height_function,
+            coords: []
+        }
+
+
+        this.load_heightmap();
     }
 
-    load_heightmap(heightmap: any){
-        for (let x = 0; x > this.heightmap.size.x; x++){
-            for(let y = 0; y > this.heightmap.size.y; y++){
-                heightmap.coords[x][y] = this.heightmap.height_function(x, y);
+    load_heightmap(){
+        const { size, height_function } = this.heightmap;
+
+        this.heightmap.coords = Array.from({ length: size.x }, () =>
+            Array(size.y).fill(0)
+        );
+
+        for (let x = 0; x < this.heightmap.size.x; x++){
+            for(let y = 0; y < this.heightmap.size.y; y++){
+                this.heightmap.coords[x][y] = this.heightmap.height_function(x, y);
             }
         }
     }
