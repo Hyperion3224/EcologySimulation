@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect} from "react";
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 export default function Scene(props: any) {
     const containerRef = useRef(null);
@@ -11,11 +12,13 @@ export default function Scene(props: any) {
 
             //spawn render camera and scene
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 5);
+            const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 20);
             const renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth, window.innerHeight);
 
-            camera.position.z = 2;
+            const controls = new OrbitControls(camera, renderer.domElement);
+
+            camera.position.z = 15;
 
 
             const terrain = new THREE.PlaneGeometry(props.size.x, props.size.y, props.size.x-1, props.size.y-1);
@@ -29,13 +32,19 @@ export default function Scene(props: any) {
                 posAttr.setZ(i, z);
             }
 
-
-            const cube = new THREE.BoxGeometry(1,1,1);
+            const cube = new THREE.BoxGeometry(8,8,8);
             const cubeMat = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
             const cubeMesh = new THREE.Mesh(cube, cubeMat);
             scene.add(cubeMesh);
 
+            const terrainMat = new THREE.MeshBasicMaterial({color: 0xFF0000});
+            const terrainMesh = new THREE.Mesh(terrain, terrainMat);
+            scene.add(terrainMesh);
+
+            controls.update();
             renderer.setAnimationLoop(()=>{
+                controls.update();
+
                 cubeMesh.rotation.x += Math.random()*0.01;
                 cubeMesh.rotation.y += Math.random()*0.01;
                 cubeMesh.rotation.z += Math.random()*0.01;
