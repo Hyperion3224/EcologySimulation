@@ -10,7 +10,6 @@ export default function Home() {
     return getHeightForWorld(x,y);
   })
   
-  
   // Fractal noise (FBM)
   function fbm2D(
     x: number,
@@ -35,7 +34,7 @@ export default function Home() {
   
    function getHeightForWorld(x: number, y: number): number {
     // 1) Continents: very low frequency
-    const continentScale = 0.002;         // smaller = bigger continents
+    const continentScale = 0.0002;         // smaller = bigger continents
     const continent = fbm2D(
       x * continentScale,
       y * continentScale,
@@ -77,7 +76,8 @@ export default function Home() {
 
 
   return (
-    <div>
+    <div className="bg-black">
+      {/* <button className="absolute z-2 p-5 rounded-2xl bg-black border border-white top-5 left-[50%] translate-x-[-50%]">change map</button> */}
       <Scene size={board.heightmap.size} coords={board.heightmap.coords}/>
     </div>
   );

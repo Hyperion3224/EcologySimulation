@@ -24,7 +24,7 @@ export default function Scene(props: SceneProps) {
     const height = containerRef.current.clientHeight || window.innerHeight;
 
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, 40, 40);
+    camera.position.set(0, 150, 150);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -37,7 +37,7 @@ export default function Scene(props: SceneProps) {
     controls.target.set(0, 0, 0);
     controls.update();
 
-    // Lights 🔆
+    // Lights 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
