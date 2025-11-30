@@ -3,10 +3,12 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { EntityBase } from './entities/entity.base';
 
 type SceneProps = {
-  size: { x: number; y: number };          // grid size
-  coords: number[][];                      // height map [x][y]
+  size: { x: number; y: number };          
+  coords: number[][];                      
+  entities: EntityBase[];
 };
 
 export default function Scene(props: SceneProps) {
@@ -16,7 +18,7 @@ export default function Scene(props: SceneProps) {
     if (!containerRef.current) return;
     if (typeof window === 'undefined') return;
 
-    // Scene, camera, renderer
+    // Scene, camera, renderer, entityMeshes
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x202025);
 
@@ -24,7 +26,7 @@ export default function Scene(props: SceneProps) {
     const height = containerRef.current.clientHeight || window.innerHeight;
 
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, 40, 40);
+    camera.position.set(0, 150, 150);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -55,14 +57,11 @@ export default function Scene(props: SceneProps) {
 
     const posAttr = terrain.getAttribute('position') as THREE.BufferAttribute;
 
-    // Set heights using coords[x][y]
     for (let x = 0; x < sx; x++) {
       for (let y = 0; y < sy; y++) {
-        const z = props.coords[x][y]; // height
-        const index = y + x * sy;     // correct indexing (x major, then y)
+        const z = props.coords[x][y]; 
+        const index = y * sx + x; 
 
-        // Because we rotated the plane, "height" is now Y, not Z
-        // position: (X, Y, Z) → height is Y
         posAttr.setY(index, z);
       }
     }
@@ -78,6 +77,11 @@ export default function Scene(props: SceneProps) {
 
     const terrainMesh = new THREE.Mesh(terrain, terrainMat);
     scene.add(terrainMesh);
+
+    //Init entities
+    props.entities.forEach(entity => {
+      scene.add(entityToMesh(entity));
+    });
 
     // Animation loop
     const animate = () => {
@@ -98,7 +102,6 @@ export default function Scene(props: SceneProps) {
 
     window.addEventListener('resize', onResize);
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', onResize);
       renderer.setAnimationLoop(null);
@@ -111,7 +114,6 @@ export default function Scene(props: SceneProps) {
     };
   }, [props.size.x, props.size.y, props.coords]);
 
-  // Same function you already wrote, but now using height on Y
   function applyHeightColors(geometry: THREE.BufferGeometry) {
     const position = geometry.getAttribute('position') as THREE.BufferAttribute;
 
@@ -169,6 +171,43 @@ export default function Scene(props: SceneProps) {
     geometry.attributes.color.needsUpdate = true;
   }
 
-  // Stretch to viewport; adjust to taste
+  function entityToMesh(entity: EntityBase) {
+    const { x: sx, y: sy } = props.size;
+  
+    const sphereGeometry = new THREE.SphereGeometry(1, 6, 6);
+    const sphereMat = () => {
+      switch (entity.getSpecies()) {
+        case 'test':
+          return new THREE.MeshStandardMaterial({ color: '#ffdb11ff' });
+        case 'carn':
+          return new THREE.MeshStandardMaterial({ color: '#FF0000' });
+        case 'plant':
+          return new THREE.MeshStandardMaterial({ color: '#319b31ff' });
+        case 'blob':
+          return new THREE.MeshStandardMaterial({ color: '#1090f0' });
+        default:
+          return new THREE.MeshStandardMaterial({ color: 'white' });
+      }
+    };
+  
+    const mesh = new THREE.Mesh(sphereGeometry, sphereMat());
+  
+    const location = entity.getLocation(); // { x: gridX, y: gridY, z: height }
+  
+    const gridX = location.x;
+    const gridY = location.y;
+    const height = location.z + 1; // Board z = Three y
+  
+    // Map grid indices -> centered world coordinates
+    const worldX = gridX - sx / 2;
+    const worldZ = gridY - sy / 2;
+    const worldY = height;
+  
+    mesh.position.set(worldX, worldY, worldZ);
+  
+    return mesh;
+  }
+
+
   return <div ref={containerRef} style={{ width: '100vw', height: '100vh' }} />;
 }

@@ -1,17 +1,28 @@
 export interface entity{
     id: number,
-    health: number,
     species: string, 
     genome: number[],
-
+    location : entityLocation,
+    
     species_averages: number[],
-    variance: number,
+    species_std: number[],
+    
 
-    speed: number,
-    strength: number,
-    fertility: number,
-    size: number,
-    energy: number,
-    sight: number, 
-    locality_preferance: {x: number, y: number, z: number},
+    derivedStats:{
+        health: number,
+        speed: number,
+        strength: number,
+        fertility: number,
+        size: number,
+        energy: number,
+        sight: number, 
+        locality_preferance: number,
+    }
+}
+
+
+
+export interface entityLocation {
+    position: {x: number, y: number, z: number},
+    facing: {x: number, y: number, z: number},
 }
