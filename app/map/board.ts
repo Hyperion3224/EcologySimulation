@@ -15,9 +15,16 @@ export class Board {
             height_function,
             coords: []
         }
-
-
+        
         this.load_heightmap();
+    }
+
+    randomPos = ()=>{
+        const X: number = Math.floor(Math.random() * this.heightmap.size.x);
+        const Y: number = Math.floor(Math.random() * this.heightmap.size.y);
+        const Z: number = this.heightmap.coords[X][Y];
+        
+        return {x: X, y: Y, z: Z};
     }
 
     load_heightmap(){
