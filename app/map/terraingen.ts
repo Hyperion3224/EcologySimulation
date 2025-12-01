@@ -5,14 +5,14 @@ export default class TGEN {
 
   constructor(){}
 
-  simplexFn(x: number, y: number): number {
-    return this.simplex.noise(x, y);
+  simplexFn(x: number, z: number): number {
+    return this.simplex.noise(x, z);
   }
 
   // Fractal simplex with increasing frequency
   simplexOfN(
     x: number,
-    y: number,
+    z: number,
     octaves: number,
     scale = 0.01,      // global zoom
     lacunarity = 2.0,  // frequency multiplier per octave
@@ -25,9 +25,9 @@ export default class TGEN {
 
     for (let i = 0; i < octaves; i++) {
       const nx = x * scale * frequency; // low freq first, then higher
-      const ny = y * scale * frequency;
+      const nz = z * scale * frequency;
 
-      value += this.simplex.noise(nx, ny) * amplitude;
+      value += this.simplex.noise(nx, nz) * amplitude;
 
       maxAmplitude += amplitude;
       amplitude *= persistence;   // each octave contributes less
