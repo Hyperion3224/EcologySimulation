@@ -10,7 +10,7 @@ export default function Home() {
   const terrainGenerator = new TGEN();
   const board = new Board({x: 300, y:300}, (x,y)=>{
     //    https://cgvr.informatik.uni-bremen.de/teaching/cg_literatur/simplexnoise.pdf      pg.11
-    return Math.floor((terrainGenerator.simplexOfN(x,y,8) + 1) * 27);
+    return Math.floor((terrainGenerator.simplexOfN(x,y,10) + 1) * 27);
   })
 
   const entities: EntityBase[] = []
