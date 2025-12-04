@@ -3,6 +3,7 @@ import { entity, entityLocation } from "../interfaces";
 import { World } from "../world";
 
 export class EntityBase {
+    MOVEMENT_INCREMENT = 0.1;
     base: entity;
     meshAlt: THREE.Mesh | null;
     constructor(private base_class: entity){
@@ -18,6 +19,26 @@ export class EntityBase {
 
     tick(world: World): number{ return -1 };
     tryReproduce(world: World): number{ return -1 };
+
+    goTowards(position:{x: number, y: number, z:number}){
+        const dx = position.x - this.position.x;
+        const dy = position.y - this.position.y;
+        const dz = position.z - this.position.z;
+
+        const len = Math.hypot(dx,dy,dz);
+
+        if(len > 0){
+            const movX = dx/len
+            const movY = dy/len
+            const movZ = dz/len
+
+            this.base.location.position = {
+                x: this.position.x + movX * this.MOVEMENT_INCREMENT,
+                y: this.position.y + movY * this.MOVEMENT_INCREMENT,
+                z: this.position.z + movZ * this.MOVEMENT_INCREMENT
+            }
+        }
+    }
 }
 
 

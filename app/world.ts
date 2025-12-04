@@ -2,14 +2,15 @@ import { EntityBase } from "./entities/entity.base"
 import { Plant } from "./entities/plant";
 import { Test } from "./entities/test";
 import { Board } from "./map/board";
+import { ChunkManager } from "./map/chunkManager";
 import { makeRecord } from "./utilities/FactoryFunctions";
 
 export class World {
     entities: Record<string, EntityBase[]>;
-    board: Board;
+    chunkManager: ChunkManager;
 
-    constructor(size: {x: number, z: number}, heightFn: (x:number, z:number) => number){
-        this.board = new Board(size, heightFn)
+    constructor(sideLen: number, chunkSize: number, heightFn: (x:number, z:number) => number){
+        this.chunkManager = new ChunkManager(sideLen, chunkSize,heightFn);
 
         const all_entity_types = [
             "test",
@@ -43,7 +44,7 @@ export class World {
     addTest(num:number){
         const lastIndex = this.plants.length;
         for(let i = 0; i < num; i++){
-            this.plants.push(Test.createTest((lastIndex+i), {position: this.board.randomPos(), facing: this.board.randomPos()}))
+            this.plants.push(Test.createTest((lastIndex+i), {position: this.chunkManager.randomPos(), facing: this.chunkManager.randomPos()}))
         }
     }
 

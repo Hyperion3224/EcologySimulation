@@ -1,11 +1,5 @@
 import { EntityBase } from "../entities/entity.base";
-import { size } from "../interfaces";
-
-interface Heightmap {
-    coords: number[][],
-    height_function: (x: number, z:number) => number,
-    size: size;
-}
+import { size, Heightmap } from "../interfaces";
 
 export class Board {
     public heightmap: Heightmap;
