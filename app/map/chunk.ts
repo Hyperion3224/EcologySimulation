@@ -15,9 +15,14 @@ export default class Chunk{
         this.chunkSize = (chunkSize > 10) ? chunkSize : 10;
         this.xOffset = xStart;
         this.zOffset = zStart;
+        this.fillCoords();
     }
 
     fillCoords(){
+        this.heightmap.coords = Array.from({ length: this.chunkSize }, () =>
+            Array(this.chunkSize).fill(0)
+        );
+
         for(let x = 0 ; x < this.chunkSize; x++){
             for(let z= 0; z < this.chunkSize; z++){
                 this.heightmap.coords[x][z] = this.heightmap.height_function(x + this.xOffset,z + this.zOffset);
@@ -26,10 +31,13 @@ export default class Chunk{
     }
 
     randomPos = ()=>{
-        const X: number = Math.floor(Math.random() * this.heightmap.size.x + this.xOffset);
-        const Z: number = Math.floor(Math.random() * this.heightmap.size.z + this.zOffset);
+        const X: number = Math.floor(Math.random() * this.chunkSize);
+        const Z: number = Math.floor(Math.random() * this.chunkSize);
         const Y: number = this.heightmap.coords[X][Z];
         
-        return {x: X, y: Y, z: Z};
+        return {x: X + this.xOffset, y: Y, z: Z + this.zOffset};
     }
+
+    get sideLength():number         {return this.chunkSize}
+
 }

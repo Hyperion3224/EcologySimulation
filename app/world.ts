@@ -8,9 +8,13 @@ import { makeRecord } from "./utilities/FactoryFunctions";
 export class World {
     entities: Record<string, EntityBase[]>;
     chunkManager: ChunkManager;
+    height: number;
 
-    constructor(sideLen: number, chunkSize: number, heightFn: (x:number, z:number) => number){
-        this.chunkManager = new ChunkManager(sideLen, chunkSize,heightFn);
+    constructor(sideLen: number, chunkSize: number, worldHeight: number, heightFn: (x:number, z:number) => number){
+        this.chunkManager = new ChunkManager(sideLen, chunkSize,(x: number,z: number) => {
+            return (heightFn(x,z) * worldHeight);
+        });
+        this.height = worldHeight * 2;
 
         const all_entity_types = [
             "test",
@@ -19,6 +23,7 @@ export class World {
             "carn",
             "plant"
         ]
+
         this.entities = makeRecord(all_entity_types, () => [])
     }
 
@@ -42,9 +47,9 @@ export class World {
     }
 
     addTest(num:number){
-        const lastIndex = this.plants.length;
+        const lastIndex = this.tests.length;
         for(let i = 0; i < num; i++){
-            this.plants.push(Test.createTest((lastIndex+i), {position: this.chunkManager.randomPos(), facing: this.chunkManager.randomPos()}))
+            this.tests.push(Test.createTest((lastIndex+i), {position: this.chunkManager.randomPos(), facing: this.chunkManager.randomPos()}))
         }
     }
 
@@ -53,11 +58,10 @@ export class World {
     get omnis()     { return this.entities.omni}
     get carns()     { return this.entities.carn}
     get tests()     { return this.entities.test}
-    get size()      { return this.board.heightmap.size};
-    get xCenter()   { return this.size.x/2};
-    get zCenter()   { return this.size.z/2};
-    get randomPos() { return this.board.randomPos()}
-    get center()   { return {x: Math.floor(this.size.x/2), y: this.board.heightmap.coords[Math.floor(this.size.x/2)][Math.floor(this.size.z/2)], z: Math.floor(this.size.x/2)}}
+    get size()      { return this.chunkManager.maxSideLength * this.chunkManager.chunkSize};
+    get xCenter()   { return this.size/2};
+    get zCenter()   { return this.size/2};
+    get randomPos() { return this.chunkManager.randomPos()}
     get allEntities()  { return ([] as EntityBase[]).concat(
         this.plants, this.herbs, this.omnis, this.carns, this.tests)}
 }

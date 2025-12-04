@@ -11,6 +11,7 @@ export type PlantStatKey =
     | "mortality"
     | "palatability";
 
+
 export type PlantStatConfig = Record<PlantStatKey, stat>;
 
 export class Plant extends EntityBase {

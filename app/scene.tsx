@@ -17,218 +17,205 @@ export default function Scene(props: SceneProps) {
   const size = world.size;
   const entities = world.allEntities;
   
-  useEffect(() => {
+    useEffect(() => {
+        if (!containerRef.current) return;
+        if (typeof window === 'undefined') return;
 
+        //  Track geometries & materials created in this effect
+        const terrains: THREE.BufferGeometry[] = [];
+        const terrainMats: THREE.Material[] = [];
 
-    if (!containerRef.current) return;
-    if (typeof window === 'undefined') return;
+        // Scene, camera, renderer
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x202025);
 
-    // Scene, camera, renderer, entityMeshes
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x202025);
+        const width = containerRef.current.clientWidth || window.innerWidth;
+        const height = containerRef.current.clientHeight || window.innerHeight;
 
-    const width = containerRef.current.clientWidth || window.innerWidth;
-    const height = containerRef.current.clientHeight || window.innerHeight;
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        camera.position.set(0, world.size * 3, 0);
+        camera.lookAt(0, 0, 0);
 
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, world.size.x, 0);
-    camera.lookAt(0, 0, 0);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
+        containerRef.current.appendChild(renderer.domElement);
 
-    containerRef.current.appendChild(renderer.domElement);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 0, 0);
+        controls.update();
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 0, 0);
-    controls.update();
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
 
-    // Lights 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(30, 50, 20);
+        scene.add(dirLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(30, 50, 20);
-    scene.add(dirLight);
-
-    // Terrain geometry
-    const { x: sx, z: sz } = size;
-
-    const terrain = new THREE.PlaneGeometry(sx, sz, sx - 1, sz - 1);
-
-    // Make it a horizontal terrain in XZ plane
-    terrain.rotateX(-Math.PI / 2);
-
-    const posAttr = terrain.getAttribute('position') as THREE.BufferAttribute;
-
-    for (let x = 0; x < sx; x++) {
-      for (let z = 0; z < sz; z++) {
-        const y = world.board.heightmap.coords[x][z]; 
-        const index = z * sx + x; 
-
-        posAttr.setY(index, y);
-      }
-    }
-    posAttr.needsUpdate = true;
-
-    // Apply colors based on height (Y after rotation)
-    applyHeightColors(terrain);
-
-    const terrainMat = new THREE.MeshStandardMaterial({
-      vertexColors: true,
-      flatShading: true,
-    });
-
-    const terrainMesh = new THREE.Mesh(terrain, terrainMat);
-    scene.add(terrainMesh);
-
-    //Init entities
-    entities.map((entity) => {
-      if(entity.mesh){
-        scene.add(entity.mesh);
-      }
-      updateEntityPositions();
-    });
-
-    // Animation loop
-    const animate = () => {
-      controls.update();
-      world.tick();
-      updateEntityPositions();
-      renderer.render(scene, camera);
+        // Init chunks
+        world.chunkManager.chunks.map((chunk) => {
+          const sL = chunk.sideLength;
+          const plane = new THREE.PlaneGeometry(sL, sL, sL - 1, sL - 1);
+          plane.rotateX(-Math.PI / 2);
+          plane.translate(chunk.xOffset, 0, chunk.zOffset);
+        
+          const posAttr = plane.getAttribute('position') as THREE.BufferAttribute;
+        
+          for (let x = 0; x < sL; x++) {
+            for (let z = 0; z < sL; z++) {
+              const y = chunk.heightmap.coords[x][z];
+              const index = z * sL + x;
+              posAttr.setY(index, y);
+            }
+          }
+          posAttr.needsUpdate = true;
       
-    };
+          applyHeightColors(plane);
+      
+          const terrainMat = new THREE.MeshStandardMaterial({
+            vertexColors: true,
+            flatShading: true,
+          });
+      
+          const terrainMesh = new THREE.Mesh(plane, terrainMat);
+      
+          //  Track for disposal
+          terrains.push(plane);
+          terrainMats.push(terrainMat);
+      
+          scene.add(terrainMesh);
+        });
+    
+        // Init entities
+        entities.map((entity) => {
+          if (entity.mesh) {
+            scene.add(entity.mesh);
+          }
+          updateEntityPositions();
+        });
+    
+        // Animation loop
+        const animate = () => {
+          controls.update();
+          world.tick();
+          updateEntityPositions();
+          renderer.render(scene, camera);
+        };
+    
+        renderer.setAnimationLoop(animate);
+    
+        // Handle resize
+        const onResize = () => {
+          const w = containerRef.current?.clientWidth || window.innerWidth;
+          const h = containerRef.current?.clientHeight || window.innerHeight;
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        };
+    
+        window.addEventListener('resize', onResize);
+    
+        // CLEANUP
+        return () => {
+          window.removeEventListener('resize', onResize);
+        
+          // stop render loop
+          renderer.setAnimationLoop(null);
+        
+          // dispose controls (removes event listeners)
+          controls.dispose();
+        
+          // dispose all tracked geometries/materials
+          terrains.forEach((geo) => geo.dispose());
+          terrainMats.forEach((mat) => mat.dispose());
+        
+          // (optional) remove entity meshes from scene
+          entities.forEach((entity) => {
+            if (entity.mesh) {
+              scene.remove(entity.mesh);
+              entity.destroyEntityMesh();
+            }
+          });
+      
+          // dispose renderer + remove canvas from DOM
+          renderer.dispose();
+          if (renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+          }
+        };
+    }, [props.world, world.size, entities]);
 
-    renderer.setAnimationLoop(animate);
-
-    // Handle resize
-    const onResize = () => {
-      const w = containerRef.current?.clientWidth || window.innerWidth;
-      const h = containerRef.current?.clientHeight || window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
-
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      window.removeEventListener('resize', onResize);
-      renderer.setAnimationLoop(null);
-      renderer.dispose();
-      terrain.dispose();
-      terrainMat.dispose();
-      if (renderer.domElement.parentNode) {
-        renderer.domElement.parentNode.removeChild(renderer.domElement);
-      }
-    };
-  }, [props.world]);
 
   function applyHeightColors(geometry: THREE.BufferGeometry) {
-    const position = geometry.getAttribute('position') as THREE.BufferAttribute;
+  const position = geometry.getAttribute('position') as THREE.BufferAttribute;
+  const vertexCount = position.count;
 
-    const vertexCount = position.count;
-    const colors = new Float32Array(vertexCount * 3);
+  const colors = new Float32Array(vertexCount * 3);
 
-    let minH = Infinity;
-    let maxH = -Infinity;
+  //  This should reflect your *global* height range.
+  // From your previous code, it looked like heights go from 0 → world.height / 2
+  const maxHeight = world.height;   // or world.maxHeight if you track it
+  const minHeight = 0;                  // adjust if you have negative heights
 
-    for (let i = 0; i < vertexCount; i++) {
-      const h = position.getY(i); // height is Y after rotation
-      if (h < minH) minH = h;
-      if (h > maxH) maxH = h;
-    }
+  const heightRange = maxHeight - minHeight || 1;
 
-    const range = maxH - minH || 1;
-    const color = new THREE.Color();
+  // Gradient stops in [0..1] normalized world-height space
+  const gradientStops = [
+    { stop: 0.00, color: new THREE.Color(66 / 255, 182 / 255, 214 / 255) },  // water
+    { stop: 0.10, color: new THREE.Color(235 / 255, 191 / 255, 134 / 255) }, // beach
+    { stop: 0.85, color: new THREE.Color(51 / 255, 74 / 255, 45 / 255) },    // low grass
+    { stop: 0.90, color: new THREE.Color(69 / 255, 57 / 255, 46 / 255) },    // rock
+    { stop: 0.95, color: new THREE.Color(128 / 255, 120 / 255, 112 / 255) }, // high rock
+    { stop: 1.00, color: new THREE.Color(1, 1, 1) },                         // snow
+  ];
 
-    const getColorForHeight = (t: number): THREE.Color => {
-      if (t < 0.3) {
-        const tt = t / 0.3;
-        return color.setRGB(
-          0 * (1 - tt) + 0 * tt,
-          0 * (1 - tt) + 0.5 * tt,
-          0.5 * (1 - tt) + 0 * tt
-        );
-      } else if (t < 0.6) {
-        const tt = (t - 0.3) / 0.3;
-        return color.setRGB(
-          0 * (1 - tt) + 0.4 * tt,
-          0.5 * (1 - tt) + 0.26 * tt,
-          0 * (1 - tt) + 0.13 * tt
-        );
-      } else {
-        const tt = (t - 0.6) / 0.4;
-        return color.setRGB(
-          0.4 * (1 - tt) + 1.0 * tt,
-          0.26 * (1 - tt) + 1.0 * tt,
-          0.13 * (1 - tt) + 1.0 * tt
-        );
+  const getGradientColor = (t: number): THREE.Color => {
+    // clamp normalized height to [0,1]
+    t = Math.max(0, Math.min(1, t));
+
+    for (let i = 0; i < gradientStops.length - 1; i++) {
+      const curr = gradientStops[i];
+      const next = gradientStops[i + 1];
+
+      if (t <= next.stop) {
+        const segmentT =
+          (t - curr.stop) / (next.stop - curr.stop || 1);
+        return curr.color.clone().lerp(next.color, segmentT);
       }
-    };
-
-    for (let i = 0; i < vertexCount; i++) {
-      const h = position.getY(i);
-      const t = (h - minH) / range;
-
-      const c = getColorForHeight(t);
-      colors[i * 3 + 0] = c.r;
-      colors[i * 3 + 1] = c.g;
-      colors[i * 3 + 2] = c.b;
     }
 
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    geometry.attributes.color.needsUpdate = true;
+    return gradientStops[gradientStops.length - 1].color;
+  };
+
+  for (let i = 0; i < vertexCount; i++) {
+    const h = position.getY(i);
+
+    // world-based normalized height
+    const t = (h - minHeight) / heightRange;
+
+    const c = getGradientColor(t);
+    colors[i * 3 + 0] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
   }
+
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.attributes.color.needsUpdate = true;
+}
+
 
   function updateEntityPositions(): void{
     entities.map((entity) =>{
       if(entity.mesh){
-        const wX = entity.position.x - world.xCenter;
+        const wX = entity.position.x;
         const wY = entity.position.y;
-        const wZ = entity.position.z - world.zCenter;
+        const wZ = entity.position.z;
         entity.mesh.position.set(wX, wY, wZ);
       }
     })
   }
-
-  // function entityToMesh(entity: EntityBase) {
-  //   const { x: sx, z: sz } = size;
-  
-  //   const sphereGeometry = new THREE.SphereGeometry(1, 6, 6);
-  //   const sphereMat = () => {
-  //     switch (entity.species) {
-  //       case 'test':
-  //         return ;
-  //       case 'carn':
-  //         return new THREE.MeshStandardMaterial({ color: 0xFF0000 });
-  //       case 'plant':
-  //         return new THREE.MeshStandardMaterial({ color: 0x319b31 });
-  //       case 'blob':
-  //         return new THREE.MeshStandardMaterial({ color: 0x1090f0 });
-  //       default:
-  //         return new THREE.MeshStandardMaterial({ color: 'white' });
-  //     }
-  //   };
-  
-  //   const mesh = new THREE.Mesh(sphereGeometry, sphereMat());
-  
-  //   const location = entity.location; 
-  
-  //   const gridX = location.x;
-  //   const gridZ = location.z;
-  //   const height = location.y + 1; 
-  
-  //   // Map grid indices -> centered world coordinates
-  //   const worldX = gridX - sx / 2;
-  //   const worldZ = gridZ - sz / 2;
-  //   const worldY = height;
-  
-  //   mesh.position.set(worldX, worldY, worldZ);
-  
-  //   return mesh;
-  // }
 
   return <div ref={containerRef} style={{ width: '100vw', height: '100vh' }} />;
 }

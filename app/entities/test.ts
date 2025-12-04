@@ -21,8 +21,8 @@ export class Test extends EntityBase {
     }
 
     tick(world: World){
-        const nearby = world.getEntitiesInRadiusOf(this.position, 25);
-        this.goTowards(nearby[0].position);
+        //const nearby = world.getEntitiesInRadiusOf(this.position, 25);
+        //this.goTowards(nearby[0].position);
 
         return 1;
     }

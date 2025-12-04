@@ -39,6 +39,17 @@ export class EntityBase {
             }
         }
     }
+    destroyEntityMesh() {
+        if (this.mesh) {
+            const geo = this.mesh.geometry as THREE.BufferGeometry;
+            geo.dispose();
+
+            const mat = this.mesh.material;
+            if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+            else mat.dispose();
+        } 
+    }
+
 }
 
 
