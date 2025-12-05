@@ -1,3 +1,4 @@
+import { EntityBase } from "../entities/entity.base";
 import { Heightmap } from "../interfaces";
 import { ChunkManager } from "./chunkManager";
 
@@ -6,6 +7,8 @@ export default class Chunk{
     xOffset: number;
     zOffset: number;
     heightmap: Heightmap;
+    entities: EntityBase[] = [];
+
     constructor(private manager: ChunkManager, xStart: number, zStart: number, chunkSize: number, height_function: (x: number,y: number) => number){
         this.heightmap = {
             coords: [],

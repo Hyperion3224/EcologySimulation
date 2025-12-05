@@ -7,7 +7,7 @@ import { useRef } from "react";
 
 export default function Home() {
   const terrainGenerator = new TGEN();
-  const world = useRef(new World(8,10,40,((x,z) => {
+  const world = useRef(new World(7,10,40,((x,z) => {
     return terrainGenerator.simplexOfN(x,z,8) + 1}
   )));
 

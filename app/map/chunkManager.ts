@@ -15,10 +15,9 @@ export class ChunkManager {
     }
 
     generateChunks(){
-        const midPoint = this.chunkSize/2;
         this.chunks.push(new Chunk(this,0,0,this.chunkSize,this.height_function));
-        for(let len = 0; len < this.chunkSize; len++){
-            for(let i = 0; i <= 2*len; i++){
+        for(let len = 0; len < (this.maxSideLength)/2; len++){
+            for(let i = 0; i < 2*len; i++){
                 const csLen = this.chunkSize * len;
                 const dCSILen = this.chunkSize * i - csLen;
 
@@ -28,6 +27,8 @@ export class ChunkManager {
                 this.chunks.push(new Chunk(this,-dCSILen,-csLen,this.chunkSize,this.height_function));
             }
         }
+
+        console.log(this.chunks.length);
     }
 
     randomPos(){
