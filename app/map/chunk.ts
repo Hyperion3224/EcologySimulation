@@ -33,14 +33,6 @@ export default class Chunk{
         }
     }
 
-    randomPos = ()=>{
-        const X: number = Math.floor(Math.random() * this.chunkSize);
-        const Z: number = Math.floor(Math.random() * this.chunkSize);
-        const Y: number = this.heightmap.coords[X][Z];
-        
-        return {x: X + this.xOffset, y: Y, z: Z + this.zOffset};
-    }
-
     get sideLength():number         {return this.chunkSize}
 
 }

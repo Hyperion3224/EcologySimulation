@@ -3,7 +3,7 @@ import { Plant } from "./entities/plant";
 import { Test } from "./entities/test";
 import { Board } from "./map/board";
 import { ChunkManager } from "./map/chunkManager";
-import { makeRecord } from "./utilities/FactoryFunctions";
+import { makeRecord } from "./utilities";
 
 export class World {
     entities: Record<string, EntityBase[]>;
