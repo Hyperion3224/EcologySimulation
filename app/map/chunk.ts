@@ -21,7 +21,7 @@ export default class Chunk{
         this.fillCoords();
     }
 
-    fillCoords(){
+    async fillCoords(){
         this.heightmap.coords = Array.from({ length: this.chunkSize }, () =>
             Array(this.chunkSize).fill(0)
         );

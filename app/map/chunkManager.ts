@@ -16,11 +16,13 @@ export class ChunkManager {
         this.generateChunks();
     }
 
-    generateChunks(){
+    async generateChunks(){
         const centerChunk = new Chunk(this,0,0,this.chunkSize,this.height_function);
         this.chunks.push(centerChunk);
         this.chunkLoadQueue.push(centerChunk);
         
+        if(this.maxSideLength == 1){return};
+
         for(let len = 0; len < (this.maxSideLength)/2; len++){
             for(let i = 0; i < 2*len; i++){
                 const csLen = this.chunkSize * len;
