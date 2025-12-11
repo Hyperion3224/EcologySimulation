@@ -8,6 +8,7 @@ export default class Chunk{
     zOffset: number;
     heightmap: Heightmap;
     entities: EntityBase[] = [];
+    chunkPosition: {x: number, z: number};
 
     constructor(private manager: ChunkManager, xStart: number, zStart: number, chunkSize: number, height_function: (x: number,y: number) => number){
         this.heightmap = {
@@ -18,10 +19,10 @@ export default class Chunk{
         this.chunkSize = (chunkSize > 10) ? chunkSize : 10;
         this.xOffset = xStart;
         this.zOffset = zStart;
-        this.fillCoords();
+        this.chunkPosition = {x: this.xOffset, z: this.zOffset};
     }
 
-    async fillCoords(){
+    private async initialize(): Promise<Chunk>{
         this.heightmap.coords = Array.from({ length: this.chunkSize }, () =>
             Array(this.chunkSize).fill(0)
         );
@@ -31,6 +32,14 @@ export default class Chunk{
                 this.heightmap.coords[x][z] = this.heightmap.height_function(x + this.xOffset,z + this.zOffset);
             }
         }
+
+        return this;
+    }
+
+    static async create(manager: ChunkManager, xStart: number, zStart: number, chunkSize: number, height_function: (x: number,y: number) => number){
+        const chunk = new Chunk(manager, xStart, zStart, chunkSize, height_function);
+        await chunk.initialize();
+        return chunk;
     }
 
     get sideLength():number         {return this.chunkSize}

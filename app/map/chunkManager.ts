@@ -2,7 +2,7 @@ import Chunk from "./chunk";
 import { Queue } from '../utilities'
 
 export class ChunkManager {
-    chunks: Chunk[] = [];
+    chunks =  new Map<{x:number, z:number}, Chunk>();
     chunkLoadQueue = new Queue<Chunk>()
     maxSideLength: number;
     chunkSize: number;
@@ -18,7 +18,7 @@ export class ChunkManager {
 
     async generateChunks(){
         const centerChunk = new Chunk(this,0,0,this.chunkSize,this.height_function);
-        this.chunks.push(centerChunk);
+        this.chunks.set(centerChunk.chunkPosition, centerChunk);
         this.chunkLoadQueue.push(centerChunk);
         
         if(this.maxSideLength == 1){return};
@@ -33,10 +33,10 @@ export class ChunkManager {
                 const IIIChunk = new Chunk(this,-csLen,dCSILen,this.chunkSize,this.height_function);
                 const IVChunk = new Chunk(this,-dCSILen,-csLen,this.chunkSize,this.height_function);
 
-                this.chunks.push(IChunk);
-                this.chunks.push(IIChunk);
-                this.chunks.push(IIIChunk);
-                this.chunks.push(IVChunk);
+                this.addChunk(this.chunks, IChunk);
+                this.addChunk(this.chunks, IIChunk);
+                this.addChunk(this.chunks, IIIChunk);
+                this.addChunk(this.chunks, IVChunk);
 
                 this.chunkLoadQueue.push(IChunk);
                 this.chunkLoadQueue.push(IIChunk);
@@ -45,7 +45,15 @@ export class ChunkManager {
             }
         }
 
-        console.log(this.chunks.length);
+        console.log(this.chunks.size);
+    }
+
+    private addChunk(map: Map<{x: number, z: number}, Chunk>, chunk: Chunk): void {
+        const pos = chunk.chunkPosition;
+        if(map.has(pos)){
+            return;
+        }
+        map.set(pos, chunk);
     }
 
     randomPos(): {x: number, y: number, z: number} {
