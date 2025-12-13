@@ -9,11 +9,9 @@ export class World {
     chunkManager: ChunkManager;
     height: number;
 
-    constructor(sideLen: number, chunkSize: number, worldHeight: number, heightFn: (x:number, z:number) => number){
-        this.chunkManager = new ChunkManager(sideLen, chunkSize,(x: number,z: number) => {
-            return (heightFn(x,z) * worldHeight);
-        });
+    constructor(chunkManager: ChunkManager, worldHeight: number){
         this.height = worldHeight * 2;
+        this.chunkManager = chunkManager;
 
         const all_entity_types = [
             "test",
@@ -24,6 +22,10 @@ export class World {
         ]
 
         this.entities = makeRecord(all_entity_types, () => [])
+    }
+
+    private async chunkManagerInit(sideLen: number, chunkSize: number, heightFn: (x:number, z:number) => number){
+        this.chunkManager = await ChunkManager.create(sideLen, chunkSize,heightFn)
     }
 
     getEntitiesInRadiusOf(target: {x:number, y:number, z:number}, radius: number): EntityBase[]{
@@ -48,7 +50,7 @@ export class World {
     addTest(num:number){
         const lastIndex = this.tests.length;
         for(let i = 0; i < num; i++){
-            this.tests.push(Test.createTest((lastIndex+i), {position: this.chunkManager.randomPos(), facing: this.chunkManager.randomPos()}))
+            this.tests.push(Test.createTest((lastIndex+i), {position: this.randomPos, facing: this.randomPos}))
         }
     }
 
@@ -57,10 +59,10 @@ export class World {
     get omnis()     { return this.entities.omni}
     get carns()     { return this.entities.carn}
     get tests()     { return this.entities.test}
-    get size()      { return this.chunkManager.maxSideLength * this.chunkManager.chunkSize};
+    get size()      { return (this.chunkManager)? this.chunkManager.maxSideLength * this.chunkManager.chunkSize : 0};
     get xCenter()   { return this.size/2};
     get zCenter()   { return this.size/2};
-    get randomPos() { return this.chunkManager.randomPos()}
+    get randomPos() { return (this.chunkManager)? this.chunkManager.randomPos() : {x: 0, y: 0, z: 0}}
     get allEntities()  { return ([] as EntityBase[]).concat(
         this.plants, this.herbs, this.omnis, this.carns, this.tests)}
 }

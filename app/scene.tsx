@@ -64,12 +64,19 @@ export default function Scene({ world }: SceneProps) {
     
         // Animation loop
         const animate = () => {
-          if(world.chunkManager.chunkLoadQueue.hasNext()){
-            const chunk = world.chunkManager.chunkLoadQueue.next()
-            if(chunk != null){
-              loadChunkAsync(chunk, terrains, terrainMats, scene);
+          if(world.chunkManager){
+            if(world.chunkManager.hasNext){
+              world.chunkManager.generateNextChunks()
+            }
+            if(world.chunkManager.chunkLoadQueue.hasNext()){
+              const chunk = world.chunkManager.chunkLoadQueue.next()
+              if(chunk != null){
+                loadChunkAsync(chunk, terrains, terrainMats, scene);
+              }
             }
           }
+          
+          
           controls.update();
           world.tick();
           // updateEntityPositions();
