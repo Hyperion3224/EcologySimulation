@@ -1,14 +1,19 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using web.Models;
+using EcologySimulation.Models;
 
 namespace web.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index()
+    public IActionResult Index(string seed, int height, int diameter)
     {
-        return View();
+      var model = new HomeModel {};
+      if(!string.IsNullOrEmpty(seed)) model.Seed = seed;
+      if(height != 0) model.Height = height;
+      if(diameter != 0) model.Diameter = diameter;
+
+      return View( model );
     }
 
     public IActionResult Privacy()

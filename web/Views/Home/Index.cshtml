@@ -1,6 +1,14 @@
-﻿@{
+﻿@using System.Text.Json
+
+@model HomeModel;
+@{
     ViewData["Title"] = "Home Page";
 }
+<script>
+  window["seed"] = @Html.Raw(JsonSerializer.Serialize(Model.Seed));
+  window["height"] = @Html.Raw(Model.Height);
+  window["diameter"] = @Html.Raw(Model.Diameter);
+</script>
 
 <div id="root">
     <h1 style="width: 100vw; height: 100vh; text-align: center; ">Loading...</h1>

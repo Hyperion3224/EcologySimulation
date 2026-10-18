@@ -1,4 +1,4 @@
-namespace web.Models;
+namespace EcologySimulation.Models;
 
 public class ErrorViewModel
 {

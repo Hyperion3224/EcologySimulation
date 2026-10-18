@@ -11,9 +11,9 @@ import "../globals.css";
 
 export default function Home() {
   const [config, setConfig] = useState({
-    seed: "JaxonDurken",
-    worldHeight: 250,
-    worldRadius: 73,
+    seed: window.seed,
+    worldHeight: window.height,
+    worldRadius: window.diameter,
     chunkSize: 40,
   });
 
