@@ -1,7 +1,10 @@
+using EcologySimulation.Core.Service;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<TerrainService>();
 
 var app = builder.Build();
 

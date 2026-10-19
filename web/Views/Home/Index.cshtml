@@ -8,6 +8,8 @@
   window["seed"] = @Html.Raw(JsonSerializer.Serialize(Model.Seed));
   window["height"] = @Html.Raw(Model.Height);
   window["diameter"] = @Html.Raw(Model.Diameter);
+  window["chunkSize"] = @Html.Raw(Model.ChunkSize);
+  window["data"] = @Html.Raw(JsonSerializer.Serialize(Model.Data));
 </script>
 
 <div id="root">

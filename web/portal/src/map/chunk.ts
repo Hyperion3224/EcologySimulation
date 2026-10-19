@@ -10,7 +10,7 @@ export default class Chunk{
     entities: EntityBase[] = [];
     chunkPosition: {x: number, z: number};
 
-    constructor(manager: ChunkManager, xStart: number, zStart: number, chunkSize: number, height_function: (x: number,y: number) => number){
+    private constructor(manager: ChunkManager, xStart: number, zStart: number, chunkSize: number, height_function: (x: number,y: number) => number){
         this.heightmap = {
             coords: [],
             height_function: height_function,

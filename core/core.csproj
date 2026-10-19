@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DotnetNoise" Version="1.0.0" />
+    <PackageReference Include="ILGPU" Version="1.5.3" />
+  </ItemGroup>
+
 </Project>

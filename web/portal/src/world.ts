@@ -25,7 +25,7 @@ export class World {
     }
 
     private async chunkManagerInit(sideLen: number, chunkSize: number, heightFn: (x:number, z:number) => number){
-        this.chunkManager = await ChunkManager.create(sideLen, chunkSize,heightFn)
+        this.chunkManager = await ChunkManager.create(sideLen, chunkSize, heightFn)
     }
 
     getEntitiesInRadiusOf(target: {x:number, y:number, z:number}, radius: number): EntityBase[]{

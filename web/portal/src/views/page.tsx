@@ -14,7 +14,7 @@ export default function Home() {
     seed: window.seed,
     worldHeight: window.height,
     worldRadius: window.diameter,
-    chunkSize: 40,
+    chunkSize: window.chunkSize
   });
 
   const tgen = useMemo(() => new TGEN(config.seed), [config.seed]);

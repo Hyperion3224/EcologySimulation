@@ -24,7 +24,8 @@ export default function Configurator({ config }: configuratorProps) {
     if (
       seed.inputValue === config.seed &&
       Number(worldHeight.inputValue) === config.worldHeight &&
-      Number(worldRadius.inputValue) === config.worldRadius
+      Number(worldRadius.inputValue) === config.worldRadius &&
+      Number(chunkSize.inputValue) === config.chunkSize
     ) {
       return;
     }
@@ -33,6 +34,7 @@ export default function Configurator({ config }: configuratorProps) {
       seed: seed.inputValue,
       height: worldHeight.inputValue,
       diameter: worldRadius.inputValue,
+      chunk: chunkSize.inputValue
     });
 
     window.location.assign(`/?${params.toString()}`);
